@@ -13,7 +13,7 @@ const els = {
   contrastV: $('#contrastV'),
   brightness: $('#brightness'),
   brightnessV: $('#brightnessV'),
-  overlay: $('#overlay'),
+  watermark: $('#watermark'),
   grain: $('#grain'),
   btnRender: $('#btnRender'),
   btnAuto: $('#btnAuto'),
@@ -205,7 +205,7 @@ function getSettings(){
     outW: parseInt(els.outW.value, 10),
     contrast: parseFloat(els.contrast.value),
     brightness: parseFloat(els.brightness.value),
-    overlay: els.overlay.checked,
+    watermark: els.watermark.value,
     grain: els.grain.checked
   };
 }
@@ -215,7 +215,10 @@ function setStatus(msg, isBad=false){
   els.status.style.color = isBad ? 'var(--danger)' : 'var(--muted)';
 }
 
-function makeOverlayPattern(size=96){
+function makeOverlayPattern(preset){
+  const p = preset || { size:110, fillA:0.06, strokeA:0.08, faceA:0.12 };
+  const size = p.size || 110;
+
   const c = document.createElement('canvas');
   c.width = size;
   c.height = size;
@@ -226,21 +229,25 @@ function makeOverlayPattern(size=96){
   g.translate(-size/2, -size/2);
 
   // simple sloth head icon repeated
-  g.fillStyle = 'rgba(255,255,255,0.06)';
-  g.strokeStyle = 'rgba(255,255,255,0.08)';
+  g.fillStyle = `rgba(255,255,255,${p.fillA})`;
+  g.strokeStyle = `rgba(255,255,255,${p.strokeA})`;
   g.lineWidth = 2;
-  for (const p of [[22,26],[62,70]]){
-    const [x,y] = p;
+  for (const pt of [[Math.round(size*0.20),Math.round(size*0.24)],[Math.round(size*0.58),Math.round(size*0.64)]]){
+    const [x,y] = pt;
     g.beginPath();
     g.roundRect(x, y, 34, 34, 14);
     g.fill();
     g.stroke();
-    g.fillStyle = 'rgba(0,0,0,0.12)';
+
+    // face mask
+    g.fillStyle = `rgba(0,0,0,${p.faceA})`;
     g.beginPath();
     g.ellipse(x+17,y+18, 10, 8, 0, 0, Math.PI*2);
     g.fill();
-    g.fillStyle = 'rgba(255,255,255,0.06)';
+
+    g.fillStyle = `rgba(255,255,255,${p.fillA})`;
   }
+
   return ctxPrev.createPattern(c, 'repeat');
 }
 
@@ -371,10 +378,15 @@ async function render(){
   els.preview.height = outH;
   ctxPrev.putImageData(out, 0, 0);
 
-  if (s.overlay){
+  if (s.watermark && s.watermark !== 'none'){
+    const wm = s.watermark;
+    const preset = wm === 'bold'
+      ? { comp:'overlay', size:96, fillA:0.10, strokeA:0.14, faceA:0.18 }
+      : { comp:'soft-light', size:140, fillA:0.035, strokeA:0.050, faceA:0.070 };
+
     ctxPrev.save();
-    ctxPrev.globalCompositeOperation = 'overlay';
-    ctxPrev.fillStyle = makeOverlayPattern(110);
+    ctxPrev.globalCompositeOperation = preset.comp;
+    ctxPrev.fillStyle = makeOverlayPattern(preset);
     ctxPrev.fillRect(0,0,outW,outH);
     ctxPrev.restore();
   }
@@ -458,7 +470,9 @@ function loadSettings(){
     if (s.outW) els.outW.value = String(s.outW);
     if (s.contrast) els.contrast.value = String(s.contrast);
     if (s.brightness) els.brightness.value = String(s.brightness);
-    if (typeof s.overlay === 'boolean') els.overlay.checked = s.overlay;
+    // Back-compat: older builds stored boolean `overlay`.
+    if (typeof s.watermark === 'string') els.watermark.value = s.watermark;
+    else if (typeof s.overlay === 'boolean') els.watermark.value = s.overlay ? 'subtle' : 'none';
     if (typeof s.grain === 'boolean') els.grain.checked = s.grain;
   } catch {}
 }
@@ -510,7 +524,7 @@ function wire(){
     if (auto && sourceImage) render();
   });
 
-  for (const el of [els.method, els.palette, els.outW, els.contrast, els.brightness, els.overlay, els.grain]){
+  for (const el of [els.method, els.palette, els.outW, els.contrast, els.brightness, els.watermark, els.grain]){
     el.addEventListener('input', () => {
       syncLabels();
       if (auto && sourceImage) render();
