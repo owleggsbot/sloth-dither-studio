@@ -27,6 +27,19 @@ body{
 a{color:var(--accent)}
 a:hover{opacity:.9}
 
+/* Focus visibility (keyboard users) */
+:where(a, button, input, select, summary, textarea):focus-visible{
+  outline: 3px solid rgba(132,240,200,.95);
+  outline-offset: 3px;
+}
+
+/* Keep file label compact in the row layout */
+.fileLabel{
+  font-size:12px;
+  color:var(--muted);
+  padding: 6px 0;
+}
+
 .top{
   display:flex;
   align-items:flex-start;

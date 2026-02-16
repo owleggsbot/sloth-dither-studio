@@ -29,6 +29,7 @@
     <section class="panel">
       <h2>1) Choose an image</h2>
       <div class="row">
+        <label class="fileLabel" for="file">Image file</label>
         <input id="file" type="file" accept="image/*" />
         <button id="btnSample" class="ghost">Use a sample sloth</button>
       </div>
@@ -123,19 +124,19 @@
       <div class="split">
         <div>
           <h3>Before</h3>
-          <canvas id="before" width="480" height="320"></canvas>
+          <canvas id="before" width="480" height="320" aria-label="Original image preview"></canvas>
         </div>
         <div>
           <h3>After</h3>
-          <canvas id="after" width="480" height="320"></canvas>
+          <canvas id="after" width="480" height="320" aria-label="Dithered output preview"></canvas>
         </div>
       </div>
     </section>
   </main>
 
-  <dialog id="help">
+  <dialog id="help" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
     <div class="dlg">
-      <h2>How it works</h2>
+      <h2 id="helpTitle">How it works</h2>
       <ol>
         <li>You pick an image (or use the sample sloth).</li>
         <li>We resize it, adjust contrast/brightness, then convert each pixel to the nearest color in a tiny palette.</li>

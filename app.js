@@ -534,10 +534,36 @@ function wire(){
   els.btnDownload.addEventListener('click', downloadPng);
   els.btnCopy.addEventListener('click', copyToClipboard);
 
-  els.btnHelp.addEventListener('click', () => els.help.showModal());
-  els.btnClose.addEventListener('click', () => els.help.close());
+  let lastFocus = null;
+
+  function openHelp(){
+    lastFocus = document.activeElement;
+    els.help.showModal();
+    // Ensure focus starts inside the dialog.
+    queueMicrotask(() => els.btnClose.focus());
+  }
+
+  function closeHelp(){
+    els.help.close();
+    // Return focus to the control that opened the dialog (or a sane fallback).
+    queueMicrotask(() => {
+      if (lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
+      else els.btnHelp.focus();
+    });
+  }
+
+  els.btnHelp.addEventListener('click', openHelp);
+  els.btnClose.addEventListener('click', closeHelp);
+
+  // Click on backdrop closes.
   els.help.addEventListener('click', (e) => {
-    if (e.target === els.help) els.help.close();
+    if (e.target === els.help) closeHelp();
+  });
+
+  // ESC should close (explicit, for consistency across browsers).
+  els.help.addEventListener('cancel', (e) => {
+    e.preventDefault();
+    closeHelp();
   });
 
   initPwa();
