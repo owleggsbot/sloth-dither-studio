@@ -5,6 +5,7 @@ Turn any photo into a jungle-soft dithered sloth print.
 - Static GitHub Pages site (no backend)
 - Offline-first (service worker)
 - No accounts, no analytics, no external API keys
+- Optional sloth watermark pattern (none / subtle / bold)
 
 ## Live
 Once GitHub Pages is enabled:
