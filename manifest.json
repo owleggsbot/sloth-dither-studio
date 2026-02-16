@@ -1,0 +1,11 @@
+{
+  "name": "Sloth Dither Studio",
+  "short_name": "SlothDither",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0b1f18",
+  "theme_color": "#103a2c",
+  "icons": [
+    {"src": "favicon.svg", "sizes": "any", "type": "image/svg+xml"}
+  ]
+}
